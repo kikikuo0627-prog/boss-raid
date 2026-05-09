@@ -3,75 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GDRaGON 突擊組隊系統</title>
+    <title>GDRaGON RAID SYSTEM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 這裡可以放你截圖中看到的深色自訂樣式 */
         body { background-color: #0d1117; color: #c9d1d9; }
-        .boss-card { background: rgba(22, 27, 34, 0.8); border: 1px solid #30363d; border-radius: 1rem; }
+        .boss-card { background: linear-gradient(180deg, #161b22 0%, #0d1117 100%); border: 1px solid #30363d; border-radius: 1.5rem; }
+        .input-dark { background-color: #0d1117; border: 1px solid #30363d; color: white; border-radius: 0.75rem; padding: 0.75rem; outline: none; transition: all 0.2s; }
+        .input-dark:focus { border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1); }
+        select { appearance: none; cursor: pointer; }
     </style>
 </head>
-<body class="p-6 font-sans">
-    <div class="max-w-md mx-auto">
-        <h1 class="text-3xl font-black italic text-white mb-2">GDRaGON</h1>
-        <p class="text-indigo-400 text-xs mb-8 tracking-widest uppercase">Raid System</p>
+<body class="p-4 md:p-10 font-sans antialiased">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-black italic text-white tracking-tighter">GDRaGON</h1>
+                <p class="text-xs text-indigo-400 font-bold tracking-widest uppercase">Raid System</p>
+            </div>
+            <button onclick="toggleAdmin()" class="text-xs text-gray-500 hover:text-white border border-gray-800 px-4 py-2 rounded-full transition">隊長控制台</button>
+        </header>
 
-        <!-- 表單部分 -->
-        <div class="boss-card p-6 shadow-xl mb-10">
-            <form id="f" class="space-y-4">
-                <input id="n" placeholder="角色 ID" required class="w-full bg-[#0d1117] border border-[#30363d] p-3 rounded-lg outline-none focus:border-indigo-500">
-                <div class="grid grid-cols-2 gap-4">
-                    <input id="lv" type="number" placeholder="等級" required class="w-full bg-[#0d1117] border border-[#30363d] p-3 rounded-lg outline-none">
-                    <select id="j" class="w-full bg-[#0d1117] border border-[#30363d] p-3 rounded-lg outline-none text-gray-400">
-                        <option>主教</option><option>夜使者</option><option>英雄</option>
-                        <!-- 可自行增加職業 -->
-                    </select>
+        <!-- 隊長控制台 (預設隱藏) -->
+        <div id="adminPanel" class="hidden boss-card p-8 mb-10 border-indigo-500/50 shadow-2xl">
+            <h2 class="text-indigo-400 font-bold mb-4 flex items-center gap-2">🛡️ 隊長控制模式</h2>
+            <p class="text-gray-500 text-[10px] mb-4">* 執行管理操作前，請先輸入管理密碼</p>
+            <div class="space-y-4">
+                <input type="password" id="adminPwd" placeholder="••••" class="w-full input-dark">
+                <div class="flex gap-2">
+                    <button class="flex-1 bg-gray-800 hover:bg-gray-700 py-3 rounded-xl font-bold text-sm">+ 新增時段</button>
+                    <button onclick="alert('功能開發中')" class="flex-[2] bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold">發布更新</button>
                 </div>
-                <input id="dt" type="datetime-local" required class="w-full bg-[#0d1117] border border-[#30363d] p-3 rounded-lg outline-none">
-                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all">立即提交報名</button>
-            </form>
+            </div>
         </div>
 
-        <!-- 名單部分 -->
-        <h2 class="text-xl font-bold mb-4 flex justify-between">目前名單 <span id="c" class="text-sm text-indigo-400">載入中...</span></h2>
-        <ul id="l" class="space-y-3"></ul>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <!-- 左側：報名表單 -->
+            <div class="lg:col-span-1">
+                <div class="boss-card p-6 sticky top-10">
+                    <h3 class="text-white font-bold mb-6 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-indigo-500 rounded-full"></span> ⚔️ 立即報名
+                    </h3>
+                    <form id="f" class="space-y-5">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">角色 ID</label>
+                            <input id="n" placeholder="輸入 ID" required class="w-full input-dark mt-1">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">等級</label>
+                                <input id="lv" type="number" placeholder="260" required class="w-full input-dark mt-1">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">職業</label>
+                                <select id="j" class="w-full input-dark mt-1">
+                                    <optgroup label="劍士">
+                                        <option>英雄</option><option>聖騎士</option><option>黑騎士</option>
+                                    </optgroup>
+                                    <optgroup label="法師">
+                                        <option>主教</option><option>火毒</option><option>冰雷</option>
+                                    </optgroup>
+                                    <optgroup label="弓箭手">
+                                        <option>箭神</option><option>神射手</option>
+                                    </optgroup>
+                                    <optgroup label="盜賊">
+                                        <option>夜使者</option><option>暗影神偷</option>
+                                    <optgroup label="海盜">
+                                        <option>拳霸</option><option>槍神</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">預計時間</label>
+                            <input id="dt" type="datetime-local" required class="w-full input-dark mt-1">
+                        </div>
+                        <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-xl font-bold shadow-lg shadow-indigo-500/20 active:scale-95 transition-all">提交報名</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 右側：名單顯示 -->
+            <div class="lg:col-span-2">
+                <div class="flex justify-between items-end mb-6">
+                    <h2 class="text-2xl font-bold text-white italic">RAID LIST</h2>
+                    <span id="c" class="text-xs font-black bg-indigo-500/10 text-indigo-400 px-4 py-1 rounded-full border border-indigo-500/20">LOADING...</span>
+                </div>
+                <div id="l" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 卡片會動態生成於此 -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // *** https://boss.kikikuo0627.workers.dev/ ***
+        // https://boss.kikikuo0627.workers.dev/
         const API_URL = "https://boss.kikikuo0627.workers.dev";
 
+        function toggleAdmin() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('hidden');
+        }
+
         const load = async () => {
-            const res = await fetch(`${API_URL}/api/list`);
-            const data = await res.json();
-            document.getElementById('c').innerText = `共 ${data.length} 人`;
-            document.getElementById('l').innerHTML = data.map(m => `
-                <li class="p-4 boss-card flex justify-between items-center border border-[#30363d]">
-                    <div>
-                        <span class="text-indigo-400 font-bold">[${m.j}]</span>
-                        <span class="ml-1 text-white">${m.n}</span>
-                        <div class="text-[10px] text-gray-500 mt-1">📅 ${m.date.replace('T', ' ')}</div>
+            try {
+                const res = await fetch(`${API_URL}/api/list`);
+                const data = await res.json();
+                document.getElementById('c').innerText = `LIVE: ${data.length} MEMBERS`;
+                document.getElementById('l').innerHTML = data.map(m => `
+                    <div class="boss-card p-5 border-slate-800 hover:border-indigo-500/50 transition-all group">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-tighter bg-indigo-500/10 px-2 py-0.5 rounded">SQUAD MEMBER</span>
+                                <h4 class="text-lg font-bold text-white mt-1 group-hover:text-indigo-400 transition-colors">${m.n}</h4>
+                            </div>
+                            <span class="text-[10px] font-black text-slate-500 bg-slate-800 px-2 py-1 rounded border border-slate-700">LV.${m.lv}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px] font-bold">
+                            <span class="text-slate-400 italic">職業: ${m.j}</span>
+                            <span class="text-slate-500">📅 ${m.date.replace('T', ' ')}</span>
+                        </div>
                     </div>
-                    <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400">Lv.${m.lv}</span>
-                </li>
-            `).join('');
+                `).join('');
+            } catch (e) {
+                document.getElementById('c').innerText = "ERROR";
+            }
         };
 
         document.getElementById('f').onsubmit = async (e) => {
             e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerText = 'SENDING...';
+            btn.disabled = true;
+
             const payload = { 
                 n: document.getElementById('n').value, 
                 j: document.getElementById('j').value, 
                 lv: document.getElementById('lv').value, 
                 date: document.getElementById('dt').value 
             };
+
             await fetch(`${API_URL}/api/join`, { 
                 method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload) 
             });
+
             e.target.reset();
+            btn.innerText = '提交報名';
+            btn.disabled = false;
             load();
         };
+
         load();
     </script>
 </body>
